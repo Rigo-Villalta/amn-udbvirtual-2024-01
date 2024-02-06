@@ -31,7 +31,7 @@ def biseccion(a, b, func, tolerancia=0.00001, iteracion=1, resultado=[]):
                 f"{a:,.15f}",
                 f"{b:,.15f}",
                 f"{c:,.15f}",
-                "<-- Valor aprox. de x",
+                "<-- raíz aproximada.",
             ]
         )
         return resultado
