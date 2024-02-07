@@ -78,3 +78,31 @@ def newton_raphson(
             iteracion=iteracion + 1,
             resultado=resultado,
         )
+
+
+def punto_fijo(x0, g_de_x, tolerancia=0.00001, iteracion=1, resultado=[]):
+    """
+    Método de newton raphson, retorna una lista de listas para generar una tabla
+    de rich con la utilidad indicada.
+    Se asume que se tiene un x0 cercano a la raíz y que se proporciona la función
+    g(x)
+    """
+    if iteracion == 1:
+        resultado.append(["# de iteración", "x0", "x1", "error"])
+    elif iteracion == 100:
+        resultado.append([str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles" ])
+        return resultado
+    x1 = g_de_x(x0)
+    error = abs(x1 - x0)
+    if error < tolerancia:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución" ])
+        return resultado
+    else:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}" ])
+        return punto_fijo(
+            x0=x1,
+            g_de_x=g_de_x,
+            tolerancia=tolerancia,
+            iteracion= iteracion + 1,
+            resultado=resultado
+        )
