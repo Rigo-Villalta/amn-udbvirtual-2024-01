@@ -47,3 +47,34 @@ def biseccion(a, b, func, tolerancia=0.00001, iteracion=1, resultado=[]):
         return biseccion(b, c, func, tolerancia, iteracion + 1, resultado)
     else:
         raise ValueError("El valor procesado no es correcto")
+
+
+def newton_raphson(
+    x0, funcion, derivada, tolerancia=0.00001, iteracion=1, resultado=[]
+):
+    """
+    Método de newton raphson, retorna una lista de listas para generar una tabla
+    de rich con la utilidad indicada.
+    Se asume que se ha probado que xo es suficientemente cercano a la raíz para
+    poder encontrarla, se establece un máximo de iteraciones.
+    """
+    if iteracion == 1:
+        resultado.append(["# de iteración", "x0", "x1", "error"])
+    elif iteracion == 100:
+        resultado.append([str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles" ])
+        return resultado
+    x1 = x0 - (funcion(x0) / derivada(x0))
+    error = abs(x1 - x0)
+    if error < tolerancia:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución" ])
+        return resultado
+    else:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}" ])
+        return newton_raphson(
+            x0=x1,
+            funcion=funcion,
+            derivada=derivada,
+            tolerancia=tolerancia,
+            iteracion=iteracion + 1,
+            resultado=resultado,
+        )
