@@ -61,15 +61,19 @@ def newton_raphson(
     if iteracion == 1:
         resultado.append(["# de iteración", "x0", "x1", "error"])
     elif iteracion == 100:
-        resultado.append([str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles" ])
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles"]
+        )
         return resultado
     x1 = x0 - (funcion(x0) / derivada(x0))
     error = abs(x1 - x0)
     if error < tolerancia:
-        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución" ])
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución"])
         return resultado
     else:
-        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}" ])
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}"]
+        )
         return newton_raphson(
             x0=x1,
             funcion=funcion,
@@ -90,19 +94,55 @@ def punto_fijo(x0, g_de_x, tolerancia=0.00001, iteracion=1, resultado=[]):
     if iteracion == 1:
         resultado.append(["# de iteración", "x0", "x1", "error"])
     elif iteracion == 100:
-        resultado.append([str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles" ])
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", "Máximas iteraciones", "posibles"]
+        )
         return resultado
     x1 = g_de_x(x0)
     error = abs(x1 - x0)
     if error < tolerancia:
-        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución" ])
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "<-- solución"])
         return resultado
     else:
-        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}" ])
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{error:,.15f}"]
+        )
         return punto_fijo(
             x0=x1,
             g_de_x=g_de_x,
             tolerancia=tolerancia,
-            iteracion= iteracion + 1,
-            resultado=resultado
+            iteracion=iteracion + 1,
+            resultado=resultado,
+        )
+
+
+def metodo_de_secante(x0, x1, f, tolerancia=0.00001, iteracion=1, resultado=[]):
+    """
+    Método de secante acorde a algorimo de clase:
+    https://www.udbvirtual.edu.sv/materiales_didacticos/AMN941/clase3.html
+    """
+    if iteracion == 1:
+        resultado.append(["# de iteración", "x0", "x1", "x2", "error"])
+    elif iteracion == 100:
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "Máximas iteraciones", "posibles"]
+        )
+        return resultado
+
+    x2 = x1 - ((f(x1) * (x1 - x0)) / (f(x1) - f(x0)))
+    error = abs(x2 - x1)
+    if error < tolerancia:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", "<-- solución"])
+        return resultado
+    else:
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", f"{error:,.15f}"]
+        )
+        return metodo_de_secante(
+            x0=x1,
+            x1=x2,
+            f=f,
+            tolerancia=tolerancia,
+            iteracion=iteracion + 1,
+            resultado=resultado,
         )
