@@ -146,3 +146,27 @@ def metodo_de_secante(x0, x1, f, tolerancia=0.00001, iteracion=1, resultado=[]):
             iteracion=iteracion + 1,
             resultado=resultado,
         )
+
+
+def posicion_falsa(x0, x1, f, tolerancia=0.00001, iteracion=1, resultado=[]):
+
+    x2 = x1 - ( (f(x1) * (x1 - x0)) / (f(x1) - f(x0)))
+
+    if iteracion == 1:
+        error= abs(x2 -x1)
+    else:
+        error = abs(x2 - x0)
+
+    if error < tolerancia:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", "<-- solución"])
+        return resultado
+    else:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", f"{error:,.15f}"])
+        if f(x0)*f(x2) < 0:
+            return posicion_falsa(
+               x2, x0, f, tolerancia, iteracion+1, resultado   
+            )
+        else:
+            return posicion_falsa(
+               x2, x1, f, tolerancia, iteracion+1, resultado   
+            )
