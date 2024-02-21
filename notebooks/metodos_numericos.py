@@ -153,7 +153,13 @@ def posicion_falsa(x0, x1, f, tolerancia=0.00001, iteracion=1, resultado=[]):
     x2 = x1 - ( (f(x1) * (x1 - x0)) / (f(x1) - f(x0)))
 
     if iteracion == 1:
+        resultado.append(["# de iteración", "x0", "x1", "x2", "error"])
         error= abs(x2 -x1)
+    elif iteracion == 100:
+        resultado.append(
+            [str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", "Máximas iteraciones", "posibles"]
+        )
+        return resultado
     else:
         error = abs(x2 - x0)
 
@@ -168,5 +174,33 @@ def posicion_falsa(x0, x1, f, tolerancia=0.00001, iteracion=1, resultado=[]):
             )
         else:
             return posicion_falsa(
-               x2, x1, f, tolerancia, iteracion+1, resultado   
+               x2, x1, f, tolerancia, iteracion+1, resultado
             )
+
+
+def steffensen(x0, g, toleracia=0.00001, iteracion=1, resultado=[]):
+    """
+    la función g suministrada debe ser en forma g(x) = x desde la función original
+    """
+    if iteracion == 1:
+        resultado.append(["# de iteración", "x0", "x1", "x2", "x3", "error"])
+    elif iteracion == 100:
+        resultado.append([str(iteracion), "máximas", " iteraciones",  "posibles", "--", "--"])
+        
+    
+    x1 = g(x0)
+    x2 = g(x1)
+    x3 = x0 - (x1 - x0)**2 / (x2 - 2*x1 + x0)
+    error = abs(x3 - x0)
+    if error < toleracia:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", f"{x2:,.15f}", "<-- solución"])
+        return resultado
+    else:
+        resultado.append([str(iteracion), f"{x0:,.15f}", f"{x1:,.15f}", f"{x2:,.15f}", f"{x2:,.15f}", f"{error:,.15f}"])
+        return steffensen(
+            x3,
+            g,
+            toleracia,
+            iteracion + 1,
+            resultado
+        )
