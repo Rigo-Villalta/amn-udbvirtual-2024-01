@@ -1,26 +1,36 @@
-from sympy import Number, symbols
+from sympy import symbols, factor, simplify
 
-
-def lagrange(datos_x, datos_y, decimales):
+def lagrange_completo(datos_x, datos_y, valor_a_aproximar, decimales_a_usar):
     """
-    dada 2 listas de puntos retorna el polinomio de lagrange en forma algebráica
-    y con un redondeo dado por la cantidad de 'decimales'
+    método de lagrange completo que retorna una lista con:
+    - Las funciones 'L' construidas
+    - El polinomio de interpolación de lagrange
+    - El valor aproximado de la funcio de el valor a aproximar
     """
-    x = symbols("x")
-    if len(datos_x) != len(datos_y):
-        print("ERROR")
-        return 1
+    x = symbols("x", positive = True)
+    n = len(datos_x)
+    resultado = [["Concepto", "Dato"]]
     polinomio = float(0.0)
-    for k in range(len(datos_x)):
-        t = float(1.0)
-        for j in range(len(datos_x)):
-            if j != k:
-                t = t * ((x - datos_x[j]) / float(datos_x[k] - datos_x[j]))
-        polinomio += t * datos_y[k]
-    polinomio = polinomio.xreplace(
-        {n.evalf(): round(n, decimales) for n in polinomio.atoms(Number)}
-    )
-    return polinomio
+    for i in range(n):
+        numerador = float(1.0)
+        denominador = float(1.0)
+        for j in range(n):
+            if j != i:
+                numerador = numerador * (x - datos_x[j])
+                denominador = denominador * (datos_x[i] - datos_x[j])
+        numerador = (simplify(factor(numerador)))
+        L =  numerador / float(denominador)
+        L_formateado = f"{numerador}\n{'-'* len(str(numerador))}\n{' ' * ((len(str(numerador))- len(str(denominador))) // 2)}{denominador}"
+        resultado.append([f"El L_{i} es: ", str(L_formateado)])
+        resultado.append([" ", " "])
+        polinomio += L * datos_y[i]
+    resultado.append(["El polinomio de lagrange es: ", str(polinomio)])
+    resultado.append([" ", " "])
+    valor_aproximado = round(polinomio.evalf(18, subs={x: valor_a_aproximar}), decimales_a_usar)
+    print(valor_aproximado)
+    resultado.append([f"{valor_a_aproximar} Approx. en  f(x) es: ", str(valor_aproximado)])
+    return resultado
+            
 
 
 def neville(datos_x, datos_y, x):
