@@ -5,7 +5,7 @@ import numpy
 numpy.set_printoptions(precision=16)
 
 
-def lagrange(datos_x, datos_y, valor_a_aproximar, decimales_a_usar):
+def lagrange(datos_x, datos_y, valor_a_aproximar):
     """
     método de lagrange completo que retorna una lista con:
     - Las funciones 'L' construidas
@@ -38,14 +38,9 @@ def lagrange(datos_x, datos_y, valor_a_aproximar, decimales_a_usar):
         )
         resultado.append([f"El L_{i} es: ", f"{str(L_formateado)}\n"])
         polinomio += L * datos_y[i]
-    polinomio_a_mostrar = polinomio.xreplace(
-        {n.evalf: round(n, decimales_a_usar) for n in polinomio.atoms(Number)}
-    )
-    resultado.append(["El polinomio de Lagrange es: ", str(polinomio_a_mostrar)])
+    resultado.append(["El polinomio de Lagrange es: ", str(polinomio)])
     resultado.append([" ", " "])
-    valor_aproximado = round(
-        polinomio.evalf(subs={x: valor_a_aproximar}), decimales_a_usar
-    )
+    valor_aproximado = polinomio.evalf(subs={x: valor_a_aproximar})
     resultado.append(
         [f"{valor_a_aproximar} Approximado en  f(x) es: ", str(valor_aproximado)]
     )
@@ -72,9 +67,7 @@ def neville(datos_x, datos_y, x):
 
 def diferencias_divididas(datos_x, datos_y, valor_a_aproximar):
     """
-    método de lagrange completo que retorna una lista con:
-    - Las funciones 'L' construidas
-    - El polinomio de interpolación de lagrange
+    método de diferencias divididas que retorna una lista con:
     - El valor aproximado de la función de el valor a aproximar
     """
     n = len(datos_x)
@@ -97,8 +90,50 @@ def diferencias_divididas(datos_x, datos_y, valor_a_aproximar):
     return (matriz, polinomio, valor_aproximado)
 
 
-'''
-Esta es la prueba contra la clase del vídeo:
-https://www.udbvirtual.edu.sv/materiales_didacticos/AMN941/clase6.html
-matriz = diferencias_divididas([0, 1, 2, 3, 4], [0.0, 0.75, 2.25, 3.0, 2.25], 1.5)
-'''
+def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
+    """
+    método de hermite, par este método necesitados suministrar como argumentos:
+    - Una lista de valores datos_x que son los valores que se pasan a una función
+    - Una lista de valores datos_y que son lo valores de datos_x evaluados en la función
+    - una lista de valores datos_y_prima que son los valores de datos_x evaluados en la
+      primera derivada de la función
+    - El valor a aproximar
+    
+    Esta función retorna una tupla de tres elementos con:
+    - La matriz que contienen los polinomios de interpolación de Hermite.
+    - El polinomio interpolador
+    - El valor aproximado que resulta de evaluar el valor a aproximar en el polinomio interpolador
+    """
+    n = len(datos_x)
+    matriz = zeros((n * 2, n * 2), dtype="f")
+    z = []
+    for dato in datos_x:
+        z.append(dato)
+        z.append(dato)
+    primera_columna = []
+    for dato in datos_y:
+        primera_columna.append(dato)
+        primera_columna.append(dato)
+    matriz[:, 0] = primera_columna
+    for i in range(1, n * 2):
+        j = 1
+        if i % 2 == 0:
+            matriz[i][j] = (matriz[i][j - 1] - matriz[i - 1][j - 1]) / (
+                datos_x[i // 2] - datos_x[i // 2 - 1]
+            )
+        else:
+            matriz[i][j] = datos_y_prima[i // 2]
+
+    for i in range(2, n * 2):
+        for j in range(2, i + 1):
+            matriz[i][j] = (matriz[i][j - 1] - matriz[i - 1][j - 1]) / (z[i] - z[i - j])
+    coeficientes = diag(matriz)
+    x = symbols("x")
+    polinomio = coeficientes[0]
+    for i in range(0, n * 2 - 1):
+        termino = coeficientes[i]
+        for k in range(0, i):
+            termino = termino * (x - z[k])
+        polinomio = polinomio + termino
+    valor_aproximado = polinomio.evalf(subs={x: valor_a_aproximar})
+    return (matriz, polinomio, valor_aproximado)
