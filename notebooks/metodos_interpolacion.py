@@ -1,8 +1,7 @@
-from sympy import symbols, nsimplify, Number
-from numpy import zeros, float128, diag
-import numpy
+from sympy import symbols, nsimplify
+from numpy import zeros, float64, diag, linalg, matmul, set_printoptions
 
-numpy.set_printoptions(precision=16)
+set_printoptions(precision=16)
 
 
 def lagrange(datos_x, datos_y, valor_a_aproximar):
@@ -54,7 +53,7 @@ def neville(datos_x, datos_y, x):
     El útlimo valor 'matriz[n][n]' es el valor aproximado de la función
     """
     n = len(datos_x)
-    matriz = zeros((n, n), dtype=float128)
+    matriz = zeros((n, n), dtype=float64)
     matriz[:, 0] = datos_y
     for i in range(1, n):
         for j in range(1, i + 1):
@@ -98,7 +97,7 @@ def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
     - una lista de valores datos_y_prima que son los valores de datos_x evaluados en la
       primera derivada de la función
     - El valor a aproximar
-    
+
     Esta función retorna una tupla de tres elementos con:
     - La matriz que contienen los polinomios de interpolación de Hermite.
     - El polinomio interpolador
@@ -137,3 +136,71 @@ def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
         polinomio = polinomio + termino
     valor_aproximado = polinomio.evalf(subs={x: valor_a_aproximar})
     return (matriz, polinomio, valor_aproximado)
+
+
+def trazador_cubico_natural(datos_x, datos_y):
+    """
+    Nos proporcionan un conjunto de datos datos_x, datos_y y a partir
+    de estos se construye el trazador cúbico con n polinomios
+    """
+    n = len(datos_x)
+    x = symbols("x")
+
+    # calculo la lista de datos h, es decir la distancia entre nodos x
+    h = []
+    for i in range(0, n - 1):
+        h.append(datos_x[i + 1] - datos_x[i])
+
+    # Declaro la matriz de coeficientes, los lleno de ceros
+    # y coloco los unos en los extremos de la diagonal
+    coeficientes = zeros((n, n), dtype=float64)
+    coeficientes[0][0] = 1
+    coeficientes[n - 1][n - 1] = 1
+    # LLenamos el resto de la matriz acorde a las fórmulas
+    for i in range(1, n - 1):
+        for j in range(i - 1, i + 2):
+            if j == i - 1:
+                coeficientes[i][j] = h[i - 1]
+            elif j == i:
+                coeficientes[i][j] = 2 * (h[i - 1] + h[i])
+            elif j == i + 1:
+                coeficientes[i][j] = h[i]
+
+    # Ahora hago los términos independientes
+    TI = zeros((n, 1), dtype=float64)
+    for i in range(0, n):
+        if i == 0 or i == n - 1:
+            TI[i][0] = 0
+        else:
+            TI[i][0] = 3 * (datos_y[i + 1] - datos_y[i]) - 3 * (
+                datos_y[i] - datos_y[i - 1]
+            )
+
+    # Calculo los c
+    c = matmul(linalg.inv(coeficientes), TI)
+
+    # TODO: Calcular los b y los d
+    b = []
+    d = []
+    for i in range(0, n - 1):
+        b.append(
+            ((datos_y[i + 1] - datos_y[i]) / h[i])
+            - ((h[i] * (2 * c[i] + c[i + 1])) / 3)
+        )
+
+    for i in range(0, n - 1):
+        d.append((c[i + 1] - c[i]) / (3 * h[i]))
+
+    # Generamos el trazador cúbico como expresión simbólica
+    x = symbols("x")
+    polinomio_trazador = []
+    for i in range(0, n - 1):
+        polinomio_i = (
+            datos_y[i]
+            + b[i] * (x - datos_x[i])
+            + float(c[i][0]) * (x - datos_x[i]) ** 2
+            + d[i] * (x - datos_x[i]) ** 3
+        )
+        polinomio_i = polinomio_i[0]
+        polinomio_trazador.append(polinomio_i)
+    return (coeficientes, TI, polinomio_trazador)

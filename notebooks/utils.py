@@ -13,7 +13,7 @@ def imprimir_tabla(lista):
     # va acumulando las tablas
     tabla = Table()
     for column in lista[0]:
-        tabla.add_column(column)
+        tabla.add_column(column, overflow="fold")
     
     for row in lista[1:]:
         tabla.add_row(*row)
