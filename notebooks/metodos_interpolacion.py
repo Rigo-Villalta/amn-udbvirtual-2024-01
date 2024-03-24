@@ -104,7 +104,7 @@ def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
     - El valor aproximado que resulta de evaluar el valor a aproximar en el polinomio interpolador
     """
     n = len(datos_x)
-    matriz = zeros((n * 2, n * 2), dtype="f")
+    matriz = zeros((n * 2, n * 2), dtype=float64)
     z = []
     for dato in datos_x:
         z.append(dato)
@@ -118,19 +118,18 @@ def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
         j = 1
         if i % 2 == 0:
             matriz[i][j] = (matriz[i][j - 1] - matriz[i - 1][j - 1]) / (
-                datos_x[i // 2] - datos_x[i // 2 - 1]
+                z[i] - z[i - 1]
             )
         else:
             matriz[i][j] = datos_y_prima[i // 2]
 
     for i in range(2, n * 2):
         for j in range(2, i + 1):
-            matriz[i][j] = (matriz[i][j - 1] - matriz[i - 1][j - 1]) / (z[i] - z[i - j])
-    coeficientes = diag(matriz)
+            matriz[i][j] = round((matriz[i][j - 1] - matriz[i - 1][j - 1]) / (z[i] - z[i - j]), 16)
     x = symbols("x")
-    polinomio = coeficientes[0]
-    for i in range(0, n * 2 - 1):
-        termino = coeficientes[i]
+    polinomio = matriz[0][0]
+    for i in range(1, n * 2 -1):
+        termino = matriz[i][i]
         for k in range(0, i):
             termino = termino * (x - z[k])
         polinomio = polinomio + termino
@@ -141,7 +140,11 @@ def hermite(datos_x, datos_y, datos_y_prima, valor_a_aproximar):
 def trazador_cubico_natural(datos_x, datos_y):
     """
     Nos proporcionan un conjunto de datos datos_x, datos_y y a partir
-    de estos se construye el trazador cúbico con n polinomios
+    de estos se construye el trazador cúbico con n polinomios. Esta función
+    retorna una tupla de 3 elementos con:
+    - La matriz de trazadores
+    - Los trazadores cúbicos para cada tramo.
+    - 
     """
     n = len(datos_x)
     x = symbols("x")
